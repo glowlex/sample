@@ -2,29 +2,20 @@ let express = require('express');
 let technologger = require('technologger');
 let parser = require('body-parser');
 let app = express();
-let technoDoc = require('techno-gendoc');
-let path = require('path');
-
-let technolibs = require('technolibs');
+let users = new Map();
 
 app.use('/', express.static('public'));
-technoDoc.generate(require('./api'), 'public');
 
 app.use(parser.json());
-app.use('/libs', express.static('node_modules'));
 app.use(technologger);
 
-app.post('/api/messages', (req, res) => {
-	technolibs.publish(req.body).then(body => res.json(req.body));
-});
+app.post('/users', (req, res) => {
+    console.log(req.body);
+	let email = req.body.email;
+	let counter = (users.get(email) || 0);
+	users.set(email, counter+1);	
+	res.send(counter.toString());
 
-app.get('/api/messages', function (req, res) {
-	res.send([
-		technoDoc.mock(require('./api/scheme/Message')),
-		technoDoc.mock(require('./api/scheme/Message')),
-		technoDoc.mock(require('./api/scheme/Message')),
-		technoDoc.mock(require('./api/scheme/Message'))
-	])
 });
 
 app.listen(process.env.PORT || 3000, () => {
